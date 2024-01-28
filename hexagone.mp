@@ -4,22 +4,19 @@ hppp := 0.1;
 vppp := 0.1;
 tracingonline:=1;
 
-beginfig(1);
 u := 10cm;
 pair vertex[];
 vertex0 := (0,u);
 for i=1 upto 5:
     vertex[i] := vertex0 rotated (60 * i);
 endfor;
-draw vertex0
-  for i=1 upto 5: --vertex[i] endfor
-  --cycle;
 
-pickup pencircle scaled 3pt;
 margin := 0.2;
 middleleft := 1; middleright := 4; topleft := 0; topright := 5; bottomleft := 2; bottomright := 3;
+middletop := 0; lefttop := 1; leftbottom := 2; middlebottom := 3; rightbottom := 4; righttop := 5;
 pair access[][];
 pair out[];
+pair midside[];
 nbwires := 6;
 nbsides := 6;
 for iside=0 upto nbsides - 1:
@@ -29,6 +26,7 @@ for iside=0 upto nbsides - 1:
             vertex[iside] + 
             (margin + (1 - 2margin) * iwire / nbwires) * (vertex[(iside + 1) mod nbsides] - vertex[iside]);
     endfor;
+    midside[iside] := access[iside][nbwires/2];
 endfor;
 
 extra := 2cm;
@@ -64,6 +62,23 @@ def drawearth(expr wire) =
     drawtwice(wire, 4pt, .5green, 1.5pt, yellow);
 enddef;
 
+def sidejoin(expr iside) =
+    .5 u * out[iside]
+enddef;
+
+def vertexjoin(expr ivertex) =
+    .5 vertex[ivertex]
+enddef;
+
+defaultfont:="cmr17";
+
+beginfig(1);
+label.lft("PLAFOND ENTREE", 1.3u * up);
+draw vertex0
+  for i=1 upto 5: --vertex[i] endfor
+  --cycle;
+
+pickup pencircle scaled 3pt;
 draw from(topleft, 0)..to(topright, nbwires) withcolor orange ;
  
 few := 0.1;
@@ -104,8 +119,43 @@ draw from(middleright, 3)..brownjoin withcolor brown;
 draw from(topright, 0)..brownjoin withcolor brown;
 draw from(bottomleft, nbwires)..brownjoin withcolor brown;
 
-defaultfont:="cmr17";
 label.rt("vers I2", sqrt(3)/2 * u * out[middleright]);
+label.lft("vers I1", access[topleft][1]);
+endfig;
 
+beginfig(2);
+label.lft("PLAFOND SEJOUR", 1.3u * up);
+draw vertex0
+  for i=1 upto 5: --vertex[i] endfor
+  --cycle;
+
+pickup pencircle scaled 3pt;
+earthjoin := vertexjoin(leftbottom);
+drawearth(from(middleleft, 6)..earthjoin);
+drawearth(from(bottomleft, 0)..earthjoin);
+
+bulb := 1.3 * vertexjoin(lefttop);
+draw from(topleft, 6)..bulb withcolor purple;
+draw from(middleleft, 0)..bulb withcolor blue;
+drawdot bulb withpen  pencircle scaled 25pt withcolor yellow;
+
+brownjoin := vertexjoin(lefttop);
+draw from(topleft, 5)..brownjoin withcolor brown;
+draw from(middleleft, 1)..brownjoin withcolor brown;
+
+pair redjoin; redjoin := vertexjoin(righttop);
+draw from(topleft, 0)..redjoin withcolor red;
+draw from(middleleft, 2)..redjoin withcolor red;
+draw from(bottomleft, 6)..redjoin; % black wire
+
+bluejoin1 := origin;
+draw from(topleft, 3)..bluejoin1 withcolor blue;
+draw from(middleleft, 3)..bluejoin1 withcolor blue;
+draw from(bottomleft, 3)..bluejoin1 withcolor blue;
+
+label.lft("vers P2", midside[bottomleft]);
+label.lft("vers I1", access[topleft][nbwires]);
+label.lft("vers P1", access[topleft][1]);
+label.lft("vers SALON ", midside[middleleft]);
 endfig;
 end
