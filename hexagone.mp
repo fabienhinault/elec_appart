@@ -14,7 +14,9 @@ for i=1 upto 5:
 endfor;
 
 margin := 0.2;
+% sides
 middleleft := 1; middleright := 4; topleft := 0; topright := 5; bottomleft := 2; bottomright := 3;
+% vertices
 middletop := 0; lefttop := 1; leftbottom := 2; middlebottom := 3; rightbottom := 4; righttop := 5;
 pair access[][];
 pair out[];
@@ -87,18 +89,43 @@ def inter(expr side_a, iaccess_a, side_b, iaccess_b) =
     endgroup
 enddef;
 
-def joinwires(expr joinpoint, thecolor)(text T) =
+def abstractjoinwires(expr joinpoint)(text _draw, T) =
     _ix_ := 0;
     for _x_ = T:
         _ixmod_ :=  _ix_ mod 2;
         if _ixmod_ = 0:
             side := _x_;
         else:
-            draw from(side, _x_)..joinpoint withcolor thecolor;
+            _draw(side, _x_, joinpoint);
         fi
         _ix_ := _ix_ + 1;
     endfor
 enddef;
+
+def tracewithcolor(expr thecolor, side, iaccess, joinpoint)=
+    trace(from(side, iaccess)..joinpoint, thecolor);
+enddef;
+
+def drawwithcolor(expr thecolor, side, iaccess, joinpoint)=
+    draw from(side, iaccess)..joinpoint withcolor thecolor;
+enddef;
+
+def drawearthjoin(expr side, iaccess, joinpoint)=
+    drawearth(from(side, iaccess)..joinpoint);
+enddef;
+
+def joinwires(expr joinpoint, thecolor)(text T) =
+    abstractjoinwires(joinpoint)(drawwithcolor(thecolor))(T);
+enddef;
+
+def jointrace(expr joinpoint, thecolor)(text T) =
+    abstractjoinwires(joinpoint)(tracewithcolor(thecolor))(T);
+enddef;
+
+def joinearth(expr joinpoint)(text T) =
+    abstractjoinwires(joinpoint)(drawearthjoin)(T);
+enddef;
+
 
 defaultfont:="cmr17";
 
@@ -120,33 +147,19 @@ trace(from(topleft, 90)..to(middleright, 610), white);
 trace(from(topleft, 110)..to(middleright, 590), white);
 
 
-pair bluejoin[];  bluejoin1 := 0.5u * out[topleft];
-joinwires(bluejoin1, blue, topleft, 5, topright, 5, bottomleft, 1)
+pair bluejoin;  bluejoin := 0.5u * out[topleft];
+joinwires(bluejoin, blue, topleft, 5, topright, 5, bottomleft, 1);
  
-pair earthjoin; earthjoin := 0.5vertex1;
-drawearth(from(topleft, 6)..earthjoin);
-drawearth(from(middleleft, 0)..earthjoin);
-drawearth(from(bottomleft, 0)..earthjoin);
+joinearth(vertexjoin(1), topleft, 6, middleleft, 0, bottomleft, 0);
  
 pair bulb; bulb := origin;
 draw from(topleft, 2)..bulb withcolor purple;
-draw bluejoin1--bulb withcolor blue;
+draw bluejoin--bulb withcolor blue;
 drawdot bulb withpen  pencircle scaled 25pt withcolor yellow;
 
-pair blackjoin; blackjoin := .5u * out[bottomleft];
-draw from(middleleft, nbwires)..blackjoin;
-draw from(bottomleft, nbwires-2)..blackjoin;
-draw from(topright, 2)..blackjoin;
-
-bluejoin2 := .5 vertex3;
-trace(from(middleleft, nbwires - 1)..bluejoin2, lightblue);
-trace(from(bottomleft, nbwires-1)..bluejoin2, lightblue);
-trace(from(topright, 1)..bluejoin2, lightblue);
-
-pair brownjoin; brownjoin := .5u * out[middleright];
-draw from(middleright, 3)..brownjoin withcolor brown;
-draw from(topright, 0)..brownjoin withcolor brown;
-draw from(bottomleft, nbwires)..brownjoin withcolor brown;
+joinwires(sidejoin(bottomleft), black, middleleft, nbwires, bottomleft, nbwires-2, topright, 2);
+jointrace(vertexjoin(middlebottom), lightblue, middleleft, nbwires - 1, bottomleft, nbwires-1, topright, 1)
+joinwires(sidejoin(middleright), brown, middleright, 3, topright, 0, bottomleft, nbwires);
 
 label.rt("vers I2", sqrt(3)/2 * u * out[middleright]);
 label.lft("vers I1", access[topleft][1]);
@@ -159,28 +172,20 @@ draw vertex0
   --cycle;
 
 pickup pencircle scaled 3pt;
-earthjoin := vertexjoin(leftbottom);
-drawearth(from(middleleft, 6)..earthjoin);
-drawearth(from(bottomleft, 0)..earthjoin);
+joinearth(vertexjoin(leftbottom), middleleft, 6, bottomleft, 0);
 
 bulb := 1.3 * vertexjoin(lefttop);
 draw from(topleft, 6)..bulb withcolor purple;
 draw from(middleleft, 0)..bulb withcolor blue;
 drawdot bulb withpen  pencircle scaled 25pt withcolor yellow;
 
-brownjoin := vertexjoin(lefttop);
-draw from(topleft, 5)..brownjoin withcolor brown;
-draw from(middleleft, 1)..brownjoin withcolor brown;
+joinwires(vertexjoin(lefttop), brown, topleft, 5, middleleft, 1);
 
 pair redjoin; redjoin := vertexjoin(righttop);
-draw from(topleft, 0)..redjoin withcolor red;
-draw from(middleleft, 2)..redjoin withcolor red;
+joinwires(redjoin, red, topleft, 0, middleleft, 2);
 draw from(bottomleft, 6)..redjoin; % black wire
 
-bluejoin1 := origin;
-draw from(topleft, 3)..bluejoin1 withcolor blue;
-draw from(middleleft, 3)..bluejoin1 withcolor blue;
-draw from(bottomleft, 3)..bluejoin1 withcolor blue;
+joinwires(origin, blue, topleft, 3, middleleft, 3, bottomleft, 3);
 
 label.lft("vers P2", midside[bottomleft]);
 label.lft("vers I1", access[topleft][nbwires]);
