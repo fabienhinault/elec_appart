@@ -4,6 +4,8 @@ hppp := 0.1;
 vppp := 0.1;
 tracingonline:=1;
 
+%tracingall;
+
 u := 10cm;
 pair vertex[];
 vertex0 := (0,u);
@@ -36,6 +38,11 @@ color yellow; yellow := (green + red);
 color purple; purple := blue + .5 red;
 color lightblue; lightblue := .5blue + .5white;
 color brown; brown := 165/256*red + 42/256*green + 42/256*blue;
+
+def accessmac(expr iside, iwire) =
+    vertex[iside] + 
+    (margin + (1 - 2margin) * iwire / nbwires) * (vertex[(iside + 1) mod nbsides] - vertex[iside])
+enddef;
 
 def from(expr iside, iaccess) =
     access[iside][iaccess] + (extra * out[iside])--access[iside][iaccess]{-out[iside]}
@@ -70,6 +77,29 @@ def vertexjoin(expr ivertex) =
     .5 vertex[ivertex]
 enddef;
 
+def inter(expr side_a, iaccess_a, side_b, iaccess_b) =
+    begingroup
+        save x;
+        pair x;
+        x = access[side_a][iaccess_a] + whatever out[side_a];
+        x = access[side_b][iaccess_b] + whatever out[side_b];
+        x
+    endgroup
+enddef;
+
+def joinwires(expr joinpoint, thecolor)(text T) =
+    _ix_ := 0;
+    for _x_ = T:
+        _ixmod_ :=  _ix_ mod 2;
+        if _ixmod_ = 0:
+            side := _x_;
+        else:
+            draw from(side, _x_)..joinpoint withcolor thecolor;
+        fi
+        _ix_ := _ix_ + 1;
+    endfor
+enddef;
+
 defaultfont:="cmr17";
 
 beginfig(1);
@@ -88,11 +118,10 @@ defaccess(middleright, 610, 6, few);
 defaccess(middleright, 590, 6, -few);
 trace(from(topleft, 90)..to(middleright, 610), white);
 trace(from(topleft, 110)..to(middleright, 590), white);
- 
-pair bluejoin[]; bluejoin1 := 0.5u * out[topleft];
-draw from(topleft, 5)..bluejoin1 withcolor blue;
-draw from(topright, 5)..bluejoin1 withcolor blue;
-draw from(bottomleft, 1)..bluejoin1 withcolor blue;
+
+
+pair bluejoin[];  bluejoin1 := 0.5u * out[topleft];
+joinwires(bluejoin1, blue, topleft, 5, topright, 5, bottomleft, 1)
  
 pair earthjoin; earthjoin := 0.5vertex1;
 drawearth(from(topleft, 6)..earthjoin);
@@ -159,3 +188,5 @@ label.lft("vers P1", access[topleft][1]);
 label.lft("vers SALON ", midside[middleleft]);
 endfig;
 end
+
+
